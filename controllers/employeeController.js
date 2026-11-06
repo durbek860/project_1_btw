@@ -30,6 +30,13 @@ class EmployeesController {
     async addEmployees(req, res) {
         try {
             let body = req.body
+
+            let salt = 11
+            let saltRounds = await bcrypt.genSalt(salt)
+            let hashedPassword = await bcrypt.hash(body.password, saltRounds)
+
+            body.password = hashedPassword
+
             let newEmployee = await employeeDB.create(body)
             let employeeResponse = newEmployee.toObject()
             delete employeeResponse.password

@@ -4,6 +4,10 @@ const TransactionController = require('./controllers/transactionController')
 const userController = require('./controllers/userController')
 const EmployeeController = require('./controllers/employeeController')
 const ProductController = require('./controllers/productController')
+const NormController = require('./controllers/normController')
+const FinishedProductsController = require('./controllers/finishedProductsController')
+// 1. SaleController ni import qilish
+const SaleController = require('./controllers/saleController')
 
 router.get('/transactions/all', TransactionController.getTransactions)
 router.get('/transactions/filtered', TransactionController.getFilteredTransactions)
@@ -35,5 +39,27 @@ router.get('/products/:id', ProductController.getProductById)
 router.post('/products', ProductController.addProduct)
 router.put('/products/:id', ProductController.updateProduct)
 router.delete('/products/:id', ProductController.deleteProduct)
+
+// ==================NORMATIVES====================
+
+router.get('/norms', NormController.getNorms)
+router.post('/norms', NormController.addNorm)
+router.put('/norms/:id', NormController.updateNorm)
+router.delete('/norms/:id', NormController.deleteNorm)
+
+// ==================FINISHED PRODUCTS=============
+
+router.get('/finished-products', FinishedProductsController.getFinishedProducts)
+router.get('/finished-products/:id', FinishedProductsController.getFinishedProductById)
+router.post('/finished-products', FinishedProductsController.addFinishedProduct)
+router.put('/finished-products/:id', FinishedProductsController.updateFinishedProduct)
+router.delete('/finished-products/:id', FinishedProductsController.deleteFinishedProduct)
+
+// ==================SALES & CUSTOMERS=============
+
+router.get('/sales', SaleController.getSales);
+router.post('/sales/add', SaleController.createSale);
+router.get('/sales/customers', SaleController.getCustomers);
+router.put('/sales/pay-debt/:saleId', SaleController.payDebt);
 
 module.exports = router;
