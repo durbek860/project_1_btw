@@ -5,7 +5,7 @@ let response = require('../utils/responses');
 class SaleController {
     async getSales(req, res) {
         try {
-            let sales = await saleDB.find().sort({ createdAt: -1 });
+            let sales = await saleDB.find().populate("product").sort({ createdAt: -1 });
             return response.success(res, "Sotuvlar tarixi", sales);
         } catch (err) {
             return response.serverError(res, err.message, err);
@@ -31,6 +31,7 @@ class SaleController {
                 customerName,
                 phone,
                 address,
+                product: product._id,
                 productName,
                 quantity,
                 totalPrice,
@@ -49,7 +50,7 @@ class SaleController {
 
     async getCustomers(req, res) {
         try {
-            let sales = await saleDB.find().sort({ createdAt: -1 });
+            let sales = await saleDB.find().populate("product").sort({ createdAt: -1 });
 
             if (!sales || sales.length === 0) {
                 return response.success(res, "Mijozlar topilmadi", []);
@@ -84,29 +85,39 @@ class SaleController {
             return response.serverError(res, err.message, err);
         }
     }
-    
+
     async payDebt(req, res) {
         try {
             const { saleId } = req.params;
-            const { amountPaid } = req.body;
+            const { amountPaid, paymentType } = req.body;
 
-            let sale = await saleDB.findById(saleId);
+            const amount = Number(amountPaid);
+
+            let sale = await Sale.findById(saleId);
             if (!sale) {
-                return response.notFound(res, "Sotuv topilmadi!");
+                return res.status(404).json({ success: false, message: "Sotuv topilmadi!" });
             }
 
-            if (amountPaid > sale.debt) {
-                return response.serverError(res, "To'lanayotgan summa mavjud qarzdan oshib ketdi!");
+            if (amount > sale.debt) {
+                return res.status(400).json({ success: false, message: "Kiritilgan summa qarzdan ko'p!" });
             }
 
-            sale.paidAmount += Number(amountPaid);
-            sale.debt -= Number(amountPaid);
+            sale.paidAmount += amount;
+            sale.debt -= amount;
+
+            if (!sale.paymentHistory) sale.paymentHistory = [];
+
+            sale.paymentHistory.push({
+                amount: amount,
+                paymentType: paymentType || 'naqx',
+                date: new Date()
+            });
 
             await sale.save();
 
-            return response.success(res, "Qarz muvaffaqiyatli to'landi", sale);
+            return res.status(200).json({ success: true, message: "Qarz muvaffaqiyatli to'landi", data: sale });
         } catch (err) {
-            return response.serverError(res, err.message, err);
+            return res.status(500).json({ success: false, message: err.message });
         }
     }
 }
