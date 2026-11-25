@@ -93,7 +93,7 @@ class SaleController {
 
             const amount = Number(amountPaid);
 
-            let sale = await Sale.findById(saleId);
+            let sale = await saleDB.findById(saleId);
             if (!sale) {
                 return res.status(404).json({ success: false, message: "Sotuv topilmadi!" });
             }
